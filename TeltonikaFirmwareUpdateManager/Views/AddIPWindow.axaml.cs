@@ -44,6 +44,7 @@ public partial class AddIPWindow : Window
 
     private void AddIPBtnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        //Throw error if IP is already in the IPListBox
         if (ListBoxContainsString(MainWindowRef.IPListBox, IPTextBox.Text))
         {
             ErrorLabel.Content = Properties.Resources.IPAlreadyOnList;

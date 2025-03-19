@@ -91,6 +91,7 @@ public partial class MainWindow : Window
 
     private void AddIPBtnClick(object sender, RoutedEventArgs e)
     {
+        //Create the new window as a dialog box
         var ownerWindow = this;
         AddIPWindow window = new AddIPWindow();
         window.MainWindowRef = ownerWindow;
@@ -124,10 +125,12 @@ public partial class MainWindow : Window
     {
         if (string.IsNullOrEmpty(GlobalPassword))
         {
+            //Create the new window as a dialog box
             var ownerWindow = this;
             var window = new PasswordWindow();
             window.MainWindowRef = ownerWindow;
 
+            //Wait for dialog result
             var result = await window.ShowDialog<bool?>(ownerWindow);
             if (result == false)
             {
@@ -142,6 +145,7 @@ public partial class MainWindow : Window
         SearchModemProgressBar.Maximum = IPListBox.Items.Count;
         SearchModemProgressBar.IsVisible = true;
 
+        //Disable all buttons
         EnableAllButtons(false);
 
         foreach (string ip in IPListBox.Items)
@@ -179,6 +183,7 @@ public partial class MainWindow : Window
     {
         var topLevel = TopLevel.GetTopLevel(this);
 
+        //File picker for only .bin files and All Files
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = Properties.Resources.SelectFirmwareFile,
@@ -221,6 +226,7 @@ public partial class MainWindow : Window
         UpdateFirmware(true);
     }
 
+    //This function is running async so the UI doesnt get unresponsive when running
     private async void UpdateFirmware(bool AllItems)
     {
         //If you dont have selected any item, dont update
@@ -239,11 +245,13 @@ public partial class MainWindow : Window
 
         var result = await box.ShowWindowDialogAsync(this);
 
+        //If the users says no in the messagebox asking for confirmation, stop the function
         if (result == ButtonResult.No)
         {
             return;
         }
 
+        //Define the progressbar properties
         FirmwareUpdateProgressBar.Value = 0;
         FirmwareUpdateProgressBar.Maximum = itemsToIterate.Count;
         FirmwareUpdateProgressBar.IsVisible = true;
@@ -276,6 +284,7 @@ public partial class MainWindow : Window
                     FirmwareUpdateStatusLabel.Text = Properties.Resources.ConnectingSSH + " " + ItemIP;
                     await sshClient.ConnectAsync(default);
 
+                    //Run the upgrade command on the device
                     FirmwareUpdateStatusLabel.Text = Properties.Resources.FirmwareUpdateStart + ItemIP;
                     sshClient.RunCommand("sysupgrade /tmp/update.bin");
                 }
@@ -292,7 +301,8 @@ public partial class MainWindow : Window
                 }
             }
 
-            await Task.Delay(3000); // Wait 3 seconds between devices
+            //Wait 3 seconds between devices
+            await Task.Delay(3000);
 
             Dispatcher.UIThread.Post(() => FirmwareUpdateProgressBar.Value++);
         }
