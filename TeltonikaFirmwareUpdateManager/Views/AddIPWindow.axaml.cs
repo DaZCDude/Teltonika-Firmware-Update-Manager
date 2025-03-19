@@ -46,7 +46,7 @@ public partial class AddIPWindow : Window
     {
         if (ListBoxContainsString(MainWindowRef.IPListBox, IPTextBox.Text))
         {
-            ErrorLabel.Content = "IP er allerede på listen.";
+            ErrorLabel.Content = Properties.Resources.IPAlreadyOnList;
             return;
         }
 

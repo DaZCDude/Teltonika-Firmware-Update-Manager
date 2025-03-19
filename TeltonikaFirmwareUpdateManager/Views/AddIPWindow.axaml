@@ -4,7 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="135"
         x:Class="TeltonikaFirmwareUpdateManager.AddIPWindow"
-        Title="Tilføj IP"
+		xmlns:lang="clr-namespace:TeltonikaFirmwareUpdateManager.Properties;assembly=TeltonikaFirmwareUpdateManager"
+        Title="{x:Static lang:Resources.AddIP}"
 		Width="300"
 		Height="135"
 		Background="#10170f"
@@ -36,8 +37,8 @@
 					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
 
-				<Button Click="CancelBtnClick" HorizontalAlignment="Stretch" Grid.Column="0" IsCancel="True">Annuller</Button>
-				<Button x:Name="AddIPBtn" Click="AddIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="2" IsEnabled="False" IsDefault="True">Tilføj IP</Button>
+				<Button Click="CancelBtnClick" HorizontalAlignment="Stretch" Grid.Column="0" IsCancel="True" Content="{x:Static lang:Resources.Cancel}"/>
+				<Button x:Name="AddIPBtn" Click="AddIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="2" IsEnabled="False" IsDefault="True" Content="{x:Static lang:Resources.AddIP}"/>
 			</Grid>
 		</Grid>
 	</Grid>

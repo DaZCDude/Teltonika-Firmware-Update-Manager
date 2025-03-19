@@ -44,7 +44,7 @@ public partial class PasswordWindow : Window
         {
             try
             {
-                ErrorLabel.Content = "Tjekker om adgangskode er korrekt...";
+                ErrorLabel.Content = Properties.Resources.PasswordCheck;
                 ErrorLabel.Foreground = Brushes.White;
                 await Task.Delay(500);
 
@@ -52,7 +52,7 @@ public partial class PasswordWindow : Window
             }
             catch
             {
-                ErrorLabel.Content = "Forkert Adgangskode!";
+                ErrorLabel.Content = Properties.Resources.PasswordIncorrect;
                 ErrorLabel.Foreground = Brushes.Red;
                 PasswordTextBox.Focus();
                 return;

@@ -166,7 +166,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                await MessageBoxManager.GetMessageBoxStandard("Fejl", "Fejl med IP " + ip + ": " + ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowWindowDialogAsync(this);
+                await MessageBoxManager.GetMessageBoxStandard(Properties.Resources.Error, Properties.Resources.ErrorWithIP + " " + ip + ": " + ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok).ShowWindowDialogAsync(this);
             }
         }
 
@@ -181,7 +181,7 @@ public partial class MainWindow : Window
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Vælg Firmware Fil",
+            Title = Properties.Resources.SelectFirmwareFile,
             AllowMultiple = false,
             FileTypeFilter = new[]
             {
@@ -228,14 +228,14 @@ public partial class MainWindow : Window
         {
             if (FoundModemListBox.SelectedItems.Count < 1)
             {
-                await MessageBoxManager.GetMessageBoxStandard("Fejl", "Vælg mindst 1 enhed først.").ShowWindowDialogAsync(this);
+                await MessageBoxManager.GetMessageBoxStandard(Properties.Resources.Error, Properties.Resources.NoDevicesSelected).ShowWindowDialogAsync(this);
                 return;
             }
         }
 
         var itemsToIterate = (AllItems ? FoundModemListBox.Items : FoundModemListBox.SelectedItems).Cast<string>().ToList();
 
-        var box = MessageBoxManager.GetMessageBoxStandard("Advarsel", "Er du sikker på at du vil opdatere " + itemsToIterate.Count + " modem? Dette kan godt tage et stykke tid.", ButtonEnum.YesNo);
+        var box = MessageBoxManager.GetMessageBoxStandard(Properties.Resources.Warning, Properties.Resources.UpdateConfirmation1 + " " + itemsToIterate.Count + " " + Properties.Resources.UpdateConfirmation2, ButtonEnum.YesNo);
 
         var result = await box.ShowWindowDialogAsync(this);
 
@@ -258,12 +258,12 @@ public partial class MainWindow : Window
             using (var scpClient = new ScpClient(ItemIP, "root", GlobalPassword))
             {
                 await scpClient.ConnectAsync(default); // Connect asynchronously
-                FirmwareUpdateStatusLabel.Text = "Uploader firmware gennem SCP til " + ItemIP;
+                FirmwareUpdateStatusLabel.Text = Properties.Resources.UploadingFirmwareSCP + " " + ItemIP;
 
                 using (var fs = new FileStream(FirmwarePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous))
                 {
                     await Task.Run(() => scpClient.Upload(fs, "/tmp/update.bin")); //Run in background thread
-                    FirmwareUpdateStatusLabel.Text = "Firmware upload til " + ItemIP + " færdig!";
+                    FirmwareUpdateStatusLabel.Text = Properties.Resources.FirmwareUpload1 + ItemIP + Properties.Resources.FirmwareUpload2;
                 }
 
                 scpClient.Disconnect();
@@ -273,15 +273,15 @@ public partial class MainWindow : Window
             {
                 try
                 {
-                    FirmwareUpdateStatusLabel.Text = "Forbinder med SSH til " + ItemIP;
+                    FirmwareUpdateStatusLabel.Text = Properties.Resources.ConnectingSSH + " " + ItemIP;
                     await sshClient.ConnectAsync(default);
 
-                    FirmwareUpdateStatusLabel.Text = "Kører opdatering af firmware på " + ItemIP;
+                    FirmwareUpdateStatusLabel.Text = Properties.Resources.FirmwareUpdateStart + ItemIP;
                     sshClient.RunCommand("sysupgrade /tmp/update.bin");
                 }
                 catch (Exception ex)
                 {
-                    FirmwareUpdateStatusLabel.Text = "Opdatering fuldført! Genstarter modem...";
+                    FirmwareUpdateStatusLabel.Text = Properties.Resources.UpdateFinishedRestarting;
                 }
                 finally
                 {
@@ -298,7 +298,7 @@ public partial class MainWindow : Window
         }
 
         FirmwareUpdateProgressBar.IsVisible = false;
-        FirmwareUpdateStatusLabel.Text = "Fuldført!";
+        FirmwareUpdateStatusLabel.Text = Properties.Resources.Finished;
 
         EnableAllButtons(true);
     }

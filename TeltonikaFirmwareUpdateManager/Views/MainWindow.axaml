@@ -7,7 +7,8 @@
         x:Class="TeltonikaFirmwareUpdateManager.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Teltonika Firmware Update Manager"
+        xmlns:lang="clr-namespace:TeltonikaFirmwareUpdateManager.Properties;assembly=TeltonikaFirmwareUpdateManager"
+		Title="{x:Static lang:Resources.MainWindowTitle}"
 		MinWidth="700"
 		MinHeight="400"
 		Width="1000"
@@ -40,8 +41,8 @@
 						<!-- Right column (takes half the space) -->
 					</Grid.ColumnDefinitions>
 
-					<Button x:Name="AddIPBtn" Click="AddIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="0">Tilføj IP</Button>
-					<Button x:Name="RemoveIPBtn" Click="RemoveIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="2">Fjern IP</Button>
+					<Button x:Name="AddIPBtn" Click="AddIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="0" Content="{x:Static lang:Resources.AddIP}"/>
+					<Button x:Name="RemoveIPBtn" Click="RemoveIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="2" Content="{x:Static lang:Resources.RemoveIP}"/>
 				</Grid>
 			</Grid>
 		</Border>
@@ -58,7 +59,7 @@
 				<ListBox x:Name="FoundModemListBox" Grid.Row="0" Background="#7d7d7d" VerticalAlignment="Top" CornerRadius="10" SelectionMode="Multiple, Toggle"/>
 				<StackPanel Grid.Row="2">
 					<ProgressBar x:Name="SearchModemProgressBar" Minimum="0" Height="15" Background="#10170f" Foreground="#446569" Margin="0 0 0 10" IsVisible="False"/>
-					<Button x:Name="SearchModemBtn" Click="SearchModemBtnClick" HorizontalAlignment="Stretch">Søg Modem</Button>
+					<Button x:Name="SearchModemBtn" Click="SearchModemBtnClick" HorizontalAlignment="Stretch" Content="{x:Static lang:Resources.SearchModem}"/>
 				</StackPanel>
 			</Grid>
 		</Border>
@@ -73,7 +74,7 @@
 				</Grid.RowDefinitions>
 				
 				<StackPanel Grid.Row="0">
-					<Button x:Name="SelectFirmwareBtn" Click="SelectFirmwareBtnClick" HorizontalAlignment="Stretch" IsEnabled="False">Vælg Firmware Fil</Button>
+					<Button x:Name="SelectFirmwareBtn" Click="SelectFirmwareBtnClick" HorizontalAlignment="Stretch" IsEnabled="False" Content="{x:Static lang:Resources.SelectFirmwareFile}"/>
 					<Separator Opacity="0" Height="5"/>
 					<TextBlock x:Name="FirmwarePathLabel" Foreground="#eff4ee" TextWrapping="Wrap"/>
 				</StackPanel>
@@ -81,9 +82,9 @@
 				<StackPanel Grid.Row="2">
 					<TextBlock x:Name="FirmwareUpdateStatusLabel" Foreground="#eff4ee" TextWrapping="Wrap" Margin="0 0 0 5"/>
 					<ProgressBar x:Name="FirmwareUpdateProgressBar" Minimum="0" Height="15" Background="#10170f" Foreground="#446569" Margin="0 0 0 10" IsVisible="False" MinWidth="0"/>
-					<Button x:Name="UpdateSelectedBtn" Click="UpdateSelectedBtnClick" HorizontalAlignment="Stretch" IsEnabled="False">Opdater Valgte</Button>
+					<Button x:Name="UpdateSelectedBtn" Click="UpdateSelectedBtnClick" HorizontalAlignment="Stretch" IsEnabled="False" Content="{x:Static lang:Resources.UpdateSelected}"/>
 					<Separator Opacity="0" Height="5"/>
-					<Button x:Name="UpdateAllBtn" Click="UpdateAllBtnClick" HorizontalAlignment="Stretch" IsEnabled="False">Opdater Alle</Button>
+					<Button x:Name="UpdateAllBtn" Click="UpdateAllBtnClick" HorizontalAlignment="Stretch" IsEnabled="False" Content="{x:Static lang:Resources.UpdateAll}"/>
 				</StackPanel>
 			</Grid>
 		</Border>
