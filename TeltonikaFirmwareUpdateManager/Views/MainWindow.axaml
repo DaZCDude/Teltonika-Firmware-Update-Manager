@@ -29,16 +29,20 @@
 		<!-- Left Border -->
 		<Border Margin="10" CornerRadius="10" Background="#242424" VerticalAlignment="Stretch" HorizontalAlignment="Left" Padding="10" Grid.Column="0">
 			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+					<RowDefinition Height="10"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				
 				<ListBox x:Name="IPListBox" Background="#7d7d7d" VerticalAlignment="Top" CornerRadius="10"/>
 
-				<Grid VerticalAlignment="Bottom">
+				<Grid Grid.Row="2">
 					<!-- Define two columns -->
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="*"/>
-						<!-- Left column (takes half the space) -->
 						<ColumnDefinition Width="10"/>
 						<ColumnDefinition Width="*"/>
-						<!-- Right column (takes half the space) -->
 					</Grid.ColumnDefinitions>
 
 					<Button x:Name="AddIPBtn" Click="AddIPBtnClick" HorizontalAlignment="Stretch" Grid.Column="0" Content="{x:Static lang:Resources.AddIP}"/>
