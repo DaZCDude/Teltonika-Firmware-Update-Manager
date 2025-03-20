@@ -2,10 +2,13 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using CsvHelper;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using Renci.SshNet;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +26,21 @@ public partial class MainWindow : Window
 
         LoadIPsFromFile();
         CheckIfIPIsPresentInList();
+        EnableAllButtons(true);
+    }
+
+    public class ModemCSVData
+    {
+        public string IP { get; set; }
+        public string Model { get; set; }
+
+        public string Version { get; set; }
+
+        public string IMEI { get; set; }
+
+        public string Serial { get; set; }
+
+        public string Operator { get; set; }
     }
 
     public void SaveIPsToFile()
@@ -60,24 +78,54 @@ public partial class MainWindow : Window
 
     private void EnableAllButtons(bool enable)
     {
-        IPListBox.IsEnabled = enable;
-        AddIPBtn.IsEnabled = enable;
-        RemoveIPBtn.IsEnabled = enable;
-        SearchModemBtn.IsEnabled = enable;
-        SelectFirmwareBtn.IsEnabled = enable;
-        UpdateSelectedBtn.IsEnabled = enable;
-        UpdateAllBtn.IsEnabled = enable;
-
-        if (IPListBox.Items.Count < 1)
+        if (enable)
         {
-            //Make sure the Remove IP button is disabled if you remove an ip and then press update firmware.
-            RemoveIPBtn.IsEnabled = false;
+            IPListBox.IsEnabled = true;
+            AddIPBtn.IsEnabled = true;
+
+            if (IPListBox.Items.Count < 1)
+            {
+                //Make sure the Remove IP button is disabled if you remove an ip and then press update firmware.
+                RemoveIPBtn.IsEnabled = false;
+                SearchModemBtn.IsEnabled = false;
+            }
+            else
+            {
+                RemoveIPBtn.IsEnabled = true;
+                SearchModemBtn.IsEnabled = true;
+            }
+
+            if (FoundModemListBox.Items.Count < 1)
+            {
+                SelectFirmwareBtn.IsEnabled = false;
+                ExportModemInfoBtn.IsEnabled = false;
+            }
+            else
+            {
+                SelectFirmwareBtn.IsEnabled = true;
+                ExportModemInfoBtn.IsEnabled = true;
+            }
+
+            if (FirmwarePath == "")
+            {
+                //Since the EnableAllButtons function enables all buttons, i have to re-disable these 2 update buttons if theres no firmware path set yet.
+
+                UpdateSelectedBtn.IsEnabled = false;
+                UpdateAllBtn.IsEnabled = false;
+            }
+            else
+            {
+                UpdateSelectedBtn.IsEnabled = true;
+                UpdateAllBtn.IsEnabled = true;
+            }
         }
-
-        if (FirmwarePath == "")
+        else
         {
-            //Since the EnableAllButtons function enables all buttons, i have to re-disable these 2 update buttons if theres no firmware path set yet.
-
+            IPListBox.IsEnabled = false;
+            AddIPBtn.IsEnabled = false;
+            RemoveIPBtn.IsEnabled = false;
+            SearchModemBtn.IsEnabled = false;
+            SelectFirmwareBtn.IsEnabled = false;
             UpdateSelectedBtn.IsEnabled = false;
             UpdateAllBtn.IsEnabled = false;
         }
@@ -164,7 +212,16 @@ public partial class MainWindow : Window
 
                     string combinedVersion = ip + " | Model: " + hostname + " | Version: " + version;
 
-                    FoundModemListBox.Items.Add(combinedVersion);
+                    
+                    // Create a new ListBoxItem
+                    ListBoxItem item = new ListBoxItem
+                    {
+                        Content = combinedVersion, // Display text
+                        Tag = ip // Store the IP as a tag
+                    };
+                    
+                    FoundModemListBox.Items.Add(item);
+
                     SearchModemProgressBar.Value++;
                 }
             }
@@ -177,6 +234,63 @@ public partial class MainWindow : Window
         SearchModemProgressBar.IsVisible = false;
 
         EnableAllButtons(true);
+    }
+
+    private async void ExportModemInfoBtnClick(object sender, RoutedEventArgs e)
+    {
+        // Get top level from the current control. Alternatively, you can use Window reference instead.
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        // Start async operation to open the dialog.
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save CSV File",
+            SuggestedFileName = "export.csv",
+            FileTypeChoices = new[]
+            {
+                new FilePickerFileType("CSV File")
+                {
+                    Patterns = new[] { "*.csv" }
+                }
+            }
+        });
+        
+        //If file path exists
+        if (file is not null)
+        {
+            //Write to CSV file using external csv library
+            await using var stream = await file.OpenWriteAsync();
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, CultureInfo.CurrentCulture))
+            {
+                foreach (var item in FoundModemListBox.Items.Cast<ListBoxItem>())
+                {
+                    string model;
+                    string version;
+                    string imei;
+                    string serial;
+                    string networkoperator;
+
+                    using (var sshClient = new SshClient(item.Tag.ToString(), "root", GlobalPassword))
+                    {
+                        await sshClient.ConnectAsync(default);
+
+                        model = sshClient.RunCommand("ubus call system board | jsonfilter -e '@.hostname'").Result.Trim();
+                        version = sshClient.RunCommand("cat /etc/version").Result.Trim();
+                        imei = sshClient.RunCommand("gsmctl -i").Result.Trim();
+                        serial = sshClient.RunCommand("gsmctl -a").Result.Trim();
+                        networkoperator = sshClient.RunCommand("gsmctl -o").Result.Trim();
+                    }
+
+                    var records = new List<ModemCSVData>
+                    {
+                        new ModemCSVData { IP = item.Tag.ToString(), Model = model, Version = version, IMEI = imei, Serial = serial, Operator = networkoperator }
+                    };
+
+                    await csv.WriteRecordsAsync(records);
+                }
+            }
+        }
     }
 
     private async void SelectFirmwareBtnClick(object sender, RoutedEventArgs e)
@@ -226,8 +340,8 @@ public partial class MainWindow : Window
         UpdateFirmware(true);
     }
 
-    //This function is running async so the UI doesnt get unresponsive when running
-    private async void UpdateFirmware(bool AllItems)
+    //This function is running async so the UI doesnt get unresponsive when running. Task is better than void for async functions
+    private async Task UpdateFirmware(bool AllItems)
     {
         //If you dont have selected any item, dont update
         if (!AllItems)
@@ -239,7 +353,11 @@ public partial class MainWindow : Window
             }
         }
 
-        var itemsToIterate = (AllItems ? FoundModemListBox.Items : FoundModemListBox.SelectedItems).Cast<string>().ToList();
+        var itemsToIterate = (AllItems ? FoundModemListBox.Items : FoundModemListBox.SelectedItems)
+            .Cast<ListBoxItem>() // Cast to ListBoxItem, NOT string
+            .Select(item => item.Tag?.ToString()) // Get the Tag (IP)
+            .Where(ip => !string.IsNullOrEmpty(ip)) // Filter out null values
+            .ToList();
 
         var box = MessageBoxManager.GetMessageBoxStandard(Properties.Resources.Warning, Properties.Resources.UpdateConfirmation1 + " " + itemsToIterate.Count + " " + Properties.Resources.UpdateConfirmation2, ButtonEnum.YesNo);
 
@@ -258,11 +376,8 @@ public partial class MainWindow : Window
 
         EnableAllButtons(false);
 
-        foreach (string itemname in itemsToIterate)
+        foreach (string ItemIP in itemsToIterate)
         {
-            // Get IP name which is before the | part in the item name
-            string ItemIP = itemname.Substring(0, itemname.IndexOf(" |"));
-
             using (var scpClient = new ScpClient(ItemIP, "root", GlobalPassword))
             {
                 await scpClient.ConnectAsync(default); // Connect asynchronously
@@ -286,7 +401,9 @@ public partial class MainWindow : Window
 
                     //Run the upgrade command on the device
                     FirmwareUpdateStatusLabel.Text = Properties.Resources.FirmwareUpdateStart + ItemIP;
-                    sshClient.RunCommand("sysupgrade /tmp/update.bin");
+                    
+                    //Run the upgrade command async so the program wont crash
+                    await Task.Run(() => sshClient.RunCommand("sysupgrade /tmp/update.bin"));
                 }
                 catch (Exception ex)
                 {

@@ -138,6 +138,9 @@
   <data name="ErrorWithIP" xml:space="preserve">
     <value>Error with IP</value>
   </data>
+  <data name="ExportModemInfo" xml:space="preserve">
+    <value>Export to CSV</value>
+  </data>
   <data name="Finished" xml:space="preserve">
     <value>Finished!</value>
   </data>

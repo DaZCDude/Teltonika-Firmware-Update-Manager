@@ -124,6 +124,15 @@ namespace TeltonikaFirmwareUpdateManager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Export to CSV.
+        /// </summary>
+        public static string ExportModemInfo {
+            get {
+                return ResourceManager.GetString("ExportModemInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Finished!.
         /// </summary>
         public static string Finished {
